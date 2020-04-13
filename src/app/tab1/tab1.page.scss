@@ -1,3 +1,12 @@
 ion-content ion-toolbar {
   --background: translucent;
 }
+
+.flower-prop {
+  font-size: 4em;
+}
+
+.greyed-out {
+  pointer-events: none;
+  opacity: 0.5;
+}

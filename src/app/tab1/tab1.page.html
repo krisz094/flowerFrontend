@@ -1,7 +1,12 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>
-      Tab 1
+      Your Flower
+      <ion-chip color="success" *ngIf="wsState === 1">Connected</ion-chip>
+      <ion-chip color="warning" *ngIf="wsState === 0"
+        >Trying to reconnect...</ion-chip
+      >
+      <ion-chip color="danger" *ngIf="wsState === -1">Disconnected</ion-chip>
     </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -9,9 +14,53 @@
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Tab 1</ion-title>
+      <ion-title size="large">Status</ion-title>
     </ion-toolbar>
   </ion-header>
+  <ion-grid>
+    <ion-row>
+      <ion-col *ngFor="let item of cards" size="12" size-md="6" size-lg="3">
+        <ion-card>
+          <img
+            style="height: 100px; width: 100%; object-fit: cover;"
+            src="{{item.img}}"
+          />
+          <ion-card-header>
+            <ion-card-title>
+              {{ item.title }}
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content [ngClass]="wsState !== 1 ? 'greyed-out' : ''" class="flower-prop">
+            {{item.content}}
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 
-  <app-explore-container name="Tab 1 page"></app-explore-container>
+  <div
+    [ngClass]="wsState !== 1 ? 'greyed-out' : ''"
+    style="display: flex; justify-content: center; width: 100%;padding: 20px 0 40px 0;"
+  >
+    <div id="sliderpick"></div>
+  </div>
+
+  <div [ngClass]="wsState !== 1 ? 'greyed-out' : ''">
+    <ion-item>
+      <ion-label>Night Time Start</ion-label>
+      <ion-datetime
+        displayFormat="HH:mm"
+        [(value)]="startTime"
+        (ionChange)="nightTimeChanged($event, 'start')"
+      ></ion-datetime>
+    </ion-item>
+    <ion-item>
+      <ion-label>Night Time End</ion-label>
+      <ion-datetime
+        displayFormat="HH:mm"
+        [(value)]="endTime"
+        (ionChange)="nightTimeChanged($event,'end')"
+      ></ion-datetime>
+    </ion-item>
+  </div>
 </ion-content>
