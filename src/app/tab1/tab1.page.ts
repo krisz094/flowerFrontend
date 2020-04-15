@@ -1,9 +1,10 @@
-import { Component, OnInit } from "@angular/core";
-import iro from "@jaames/iro";
+import { Component, OnInit } from '@angular/core';
+import iro from '@jaames/iro';
+import { GoogleChartInterface } from 'ng2-google-charts';
 @Component({
-  selector: "app-tab1",
-  templateUrl: "tab1.page.html",
-  styleUrls: ["tab1.page.scss"]
+  selector: 'app-tab1',
+  templateUrl: 'tab1.page.html',
+  styleUrls: ['tab1.page.scss']
 })
 export class Tab1Page implements OnInit {
   cards = [];
@@ -13,10 +14,39 @@ export class Tab1Page implements OnInit {
   lightingCard;
   ws: WebSocket;
   wsState = 0;
-  startTime = "12:34";
-  endTime = "13:45";
+  startTime = '12:34';
+  endTime = '13:45';
   iroPicker = null;
-  iroColor = "rgb(255,0,0)";
+  iroColor = 'rgb(255,0,0)';
+  public tempChart: GoogleChartInterface;
+  public charts: GoogleChartInterface[];
+
+  loadTempChart(data) {
+    console.log('loading col chart')
+    this.tempChart = {
+      chartType: 'LineChart',
+      dataTable: [
+        ['Date', 'Temperature']
+      ].concat(data),
+      options: {
+        curveType: 'function',
+        title: 'Temperature',
+        height: 300,
+        width: '25%',
+        chartArea: { height: '200' },
+        hAxis: {
+          title: 'Date',
+          minValue: new Date(+new Date() - 1000 * 60 * 60 * 2)
+        },
+        vAxis: {
+          title: 'Temperature',
+          minValue: 20,
+          maxValue: 40
+        }
+      },
+    };
+
+  }
 
   retryWSConnect() {
     this.wsState = -1;
@@ -29,43 +59,43 @@ export class Tab1Page implements OnInit {
 
   padZero(num) {
     if (num < 10) {
-      return "0" + num;
+      return '0' + num;
     }
     return num;
   }
 
   connectWS() {
     this.wsState = 0;
-    this.ws = new WebSocket("ws://192.168.0.130/ws");
+    this.ws = new WebSocket('ws://192.168.0.130/ws');
     // Connection opened
-    this.ws.addEventListener("open", event => {
+    this.ws.addEventListener('open', event => {
       /* ws.send('Hello Server!'); */
       this.wsState = 1;
     });
 
     // Listen for messages
-    this.ws.addEventListener("message", event => {
-      console.log("Message from server ", event.data);
+    this.ws.addEventListener('message', event => {
+      console.log('Message from server ', event.data);
       const data = JSON.parse(event.data);
-      if (data.type === "flowerStatus") {
-        this.humiCard.content = data.cHumidity + "%";
-        this.tempCard.content = data.cTemperature + "°C";
-        this.waterCard.content = data.cSoilWet ? "Yes" : "No";
+      if (data.type === 'flowerStatus') {
+        this.humiCard.content = data.cHumidity + '%';
+        this.tempCard.content = data.cTemperature + '°C';
+        this.waterCard.content = data.cSoilWet ? 'Yes' : 'No';
         if (data.isNightTime) {
-          this.lightingCard.content = "Night Time";
+          this.lightingCard.content = 'Night Time';
         } else if (data.cSunShining) {
-          this.lightingCard.content = "Sun is shining";
+          this.lightingCard.content = 'Sun is shining';
         } else {
-          this.lightingCard.content = "LED Active";
+          this.lightingCard.content = 'LED Active';
         }
-      } else if (data.type === "initialData") {
+      } else if (data.type === 'initialData') {
         this.startTime =
           this.padZero(data.nightTime.from.h) +
-          ":" +
+          ':' +
           this.padZero(data.nightTime.from.m);
         this.endTime =
           this.padZero(data.nightTime.to.h) +
-          ":" +
+          ':' +
           this.padZero(data.nightTime.to.m);
 
         const str = `rgb(${Math.round(
@@ -76,11 +106,24 @@ export class Tab1Page implements OnInit {
         console.log(str);
         if (this.iroPicker) {
           this.iroPicker.color.set(str);
-          console.log("fefe");
+          console.log('fefe');
         } else {
           this.iroColor = str;
-          console.log("treme");
+          console.log('treme');
         }
+
+        this.loadTempChart(data.serverFlowerStates.map(data => [new Date(data.date), data.temperature]));
+
+        setTimeout(() => {
+          /* this.tempChart.dataTable.push([new Date(), 100]) */
+          this.loadTempChart(data.serverFlowerStates.map(data => [new Date(data.date), 100]));
+
+        }, 1000);
+
+        console.log(this.tempChart)
+      } else if (data.type === 'newFlowerState') {
+        const pl = data.payload;
+
       }
     });
 
@@ -89,27 +132,31 @@ export class Tab1Page implements OnInit {
   }
   constructor() {
     this.humiCard = {
-      title: "Humidity",
-      content: "25%",
+      title: 'Humidity',
+      content: '25%',
+      tableKey: 'humidity',
       img:
-        "https://base.imgix.net/files/base/ebm/hpac/image/2019/06/hpac_7132_hpac_humidity_control_0719_pr.png?auto=format&fit=crop&h=432&w=768"
+        'https://base.imgix.net/files/base/ebm/hpac/image/2019/06/hpac' +
+        '_7132_hpac_humidity_control_0719_pr.png?auto=format&fit=crop&h=432&w=768'
     };
     this.tempCard = {
-      title: "Temperature",
-      content: "23°",
-      img: "https://wallpapers.ae/wp-content/uploads/2017/12/IMG_4957.jpg"
+      title: 'Temperature',
+      content: '23°',
+      tableKey: 'temperature',
+      img: 'https://shop.movar-print.hu/wp-content/uploads/2019/03/tavaszimezo-vaszonkep.jpg'
     };
     this.waterCard = {
-      title: "Is watered",
-      content: "No",
+      title: 'Is watered',
+      content: 'No',
+      tableKey: 'watered',
       img:
-        "https://www.water-technology.net/wp-content/uploads/sites/28/2017/11/water-thumb.png"
+        'https://www.water-technology.net/wp-content/uploads/sites/28/2017/11/water-thumb.png'
     };
     this.lightingCard = {
-      title: "Lighting",
-      content: "LED Strip On",
+      title: 'Lighting',
+      content: 'LED Strip On',
       img:
-        "https://www.thegreenage.co.uk/wp-content/uploads/2016/11/Screen-Shot-2016-10-24-at-12.17.46-780x350.png"
+        'https://www.thegreenage.co.uk/wp-content/uploads/2016/11/Screen-Shot-2016-10-24-at-12.17.46-780x350.png'
     };
 
     this.connectWS();
@@ -123,7 +170,7 @@ export class Tab1Page implements OnInit {
   }
 
   nightTimeChanged(event, whichElem) {
-    if (whichElem === "start") {
+    if (whichElem === 'start') {
       this.startTime = event.detail.value;
     } else {
       this.endTime = event.detail.value;
@@ -131,8 +178,8 @@ export class Tab1Page implements OnInit {
 
     console.log(event, this.startTime, this.endTime);
 
-    const fromSplitted = this.startTime.split(":");
-    const toSplitted = this.endTime.split(":");
+    const fromSplitted = this.startTime.split(':');
+    const toSplitted = this.endTime.split(':');
 
     if (this.ws) {
       this.ws.send(
@@ -147,22 +194,22 @@ export class Tab1Page implements OnInit {
   }
 
   ngOnInit() {
-    this.iroPicker = new iro.ColorPicker("#sliderpick", {
+    this.iroPicker = new iro.ColorPicker('#sliderpick', {
       width: 250,
-      color: "" + this.iroColor,
+      color: '' + this.iroColor,
       borderWidth: 1,
-      borderColor: "#fff",
+      borderColor: '#fff',
       layout: [
         {
           component: iro.ui.Slider,
           options: {
-            sliderType: "hue"
+            sliderType: 'hue'
           }
         }
       ]
     });
 
-    this.iroPicker.on("color:change", clr => {
+    this.iroPicker.on('color:change', clr => {
       /* console.log(clr); */
       // log the current color as a HEX string
       if (this.ws) {
@@ -177,5 +224,9 @@ export class Tab1Page implements OnInit {
         );
       }
     });
+
+    this.loadTempChart([]);
+    /* this.loadTempChart(); */
+
   }
 }
