@@ -49,6 +49,10 @@ export class Tab1Page implements OnInit {
       },
     };
     this.charts['temp'] = this.tempChart;
+    setTimeout(() => {
+      console.log(this.tempChart);
+      /* this.tempChart.component.draw(); */
+    }, 1000);
   }
 
   loadHumiChart(data) {
@@ -76,6 +80,9 @@ export class Tab1Page implements OnInit {
       },
     };
     this.charts['humi'] = this.humiChart;
+    setTimeout(() => {
+      /* this.humiChart.component.draw(); */
+    }, 1000);
   }
 
   loadWaterChart(data) {
@@ -86,7 +93,7 @@ export class Tab1Page implements OnInit {
         ['Date', 'Water OK']
       ].concat(data),
       options: {
-        curveType: 'function',
+        /* curveType: 'function', */
         title: 'Water OK',
         height: 300,
         width: '25%',
@@ -102,7 +109,11 @@ export class Tab1Page implements OnInit {
         }
       },
     };
+
     this.charts['water'] = this.waterChart;
+    setTimeout(() => {
+      /* this.waterChart.component.draw(); */
+    }, 1000);
   }
 
   /* loadLightChart(data) {
@@ -198,14 +209,11 @@ export class Tab1Page implements OnInit {
           console.log('treme');
         }
 
-        this.loadTempChart(data.serverFlowerStates.map(data => [new Date(data.date), data.temperature]));
-        this.loadHumiChart(data.serverFlowerStates.map(data => [new Date(data.date), data.humidity]));
-        this.loadWaterChart(data.serverFlowerStates.map(data => [new Date(data.date), data.soilWet ? 1 : 0]));
-        /* this.loadLightChart(data.serverFlowerStates.map(data => [new Date(data.date), data.temperature])); */
-
-        /* setTimeout(() => {          
-          this.loadTempChart(data.serverFlowerStates.map(data => [new Date(data.date), 100]));
-        }, 1000); */
+        if (data.serverFlowerStates) {
+          this.loadTempChart(data.serverFlowerStates.map(data => [new Date(data.date), data.temperature]));
+          this.loadHumiChart(data.serverFlowerStates.map(data => [new Date(data.date), data.humidity]));
+          this.loadWaterChart(data.serverFlowerStates.map(data => [new Date(data.date), data.soilWet ? 1 : 0]));
+        }
 
         console.log(this.tempChart)
       } else if (data.type === 'newFlowerState') {
@@ -320,7 +328,7 @@ export class Tab1Page implements OnInit {
     this.loadTempChart([]);
     this.loadHumiChart([]);
     this.loadWaterChart([]);
-    this.loadLightChart([]);
+    /* this.loadLightChart([]); */
     /* this.loadTempChart(); */
 
   }
