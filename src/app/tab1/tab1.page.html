@@ -32,7 +32,7 @@
           </ion-card-header>
           <ion-card-content [ngClass]="wsState !== 1 ? 'greyed-out' : ''" class="flower-prop">
             {{item.content}}
-            <google-chart [data]="tempChart"></google-chart>
+            <google-chart  [data]="charts[item.tableKey]"></google-chart>
           </ion-card-content>
         </ion-card>
       </ion-col>

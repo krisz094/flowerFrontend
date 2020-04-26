@@ -19,10 +19,13 @@ export class Tab1Page implements OnInit {
   iroPicker = null;
   iroColor = 'rgb(255,0,0)';
   public tempChart: GoogleChartInterface;
-  public charts: GoogleChartInterface[];
+  public humiChart: GoogleChartInterface;
+  public waterChart: GoogleChartInterface;
+  public lightChart: GoogleChartInterface;
+  public charts = {};
 
   loadTempChart(data) {
-    console.log('loading col chart')
+    console.log('loading temperature chart');
     this.tempChart = {
       chartType: 'LineChart',
       dataTable: [
@@ -41,12 +44,95 @@ export class Tab1Page implements OnInit {
         vAxis: {
           title: 'Temperature',
           minValue: 20,
-          maxValue: 40
+          maxValue: 34
         }
       },
     };
-
+    this.charts['temp'] = this.tempChart;
   }
+
+  loadHumiChart(data) {
+    console.log('loading humidity chart');
+    this.humiChart = {
+      chartType: 'LineChart',
+      dataTable: [
+        ['Date', 'Humidity']
+      ].concat(data),
+      options: {
+        curveType: 'function',
+        title: 'Humidity',
+        height: 300,
+        width: '25%',
+        chartArea: { height: '200' },
+        hAxis: {
+          title: 'Date',
+          minValue: new Date(+new Date() - 1000 * 60 * 60 * 2)
+        },
+        vAxis: {
+          title: 'Humidity',
+          minValue: 30,
+          maxValue: 60
+        }
+      },
+    };
+    this.charts['humi'] = this.humiChart;
+  }
+
+  loadWaterChart(data) {
+    console.log('loading water chart');
+    this.waterChart = {
+      chartType: 'LineChart',
+      dataTable: [
+        ['Date', 'Water OK']
+      ].concat(data),
+      options: {
+        curveType: 'function',
+        title: 'Water OK',
+        height: 300,
+        width: '25%',
+        chartArea: { height: '200' },
+        hAxis: {
+          title: 'Date',
+          minValue: new Date(+new Date() - 1000 * 60 * 60 * 2)
+        },
+        vAxis: {
+          title: 'Water OK',
+          minValue: 0,
+          maxValue: 1
+        }
+      },
+    };
+    this.charts['water'] = this.waterChart;
+  }
+
+  /* loadLightChart(data) {
+    console.log('loading lighting chart');
+    this.lightChart = {
+      chartType: 'LineChart',
+      dataTable: [
+        ['LED Activity', 'Temperature']
+      ].concat(data),
+      options: {
+        curveType: 'function',
+        title: 'Temperature',
+        height: 300,
+        width: '25%',
+        chartArea: { height: '200' },
+        hAxis: {
+          title: 'Date',
+          minValue: new Date(+new Date() - 1000 * 60 * 60 * 2)
+        },
+        vAxis: {
+          title: 'LED Activity',
+          minValue: 0,
+          maxValue: 1
+        }
+      },
+    };
+    this.charts['light'] = this.lightChart;
+  } */
+
+
 
   retryWSConnect() {
     this.wsState = -1;
@@ -113,12 +199,13 @@ export class Tab1Page implements OnInit {
         }
 
         this.loadTempChart(data.serverFlowerStates.map(data => [new Date(data.date), data.temperature]));
+        this.loadHumiChart(data.serverFlowerStates.map(data => [new Date(data.date), data.humidity]));
+        this.loadWaterChart(data.serverFlowerStates.map(data => [new Date(data.date), data.soilWet ? 1 : 0]));
+        /* this.loadLightChart(data.serverFlowerStates.map(data => [new Date(data.date), data.temperature])); */
 
-        setTimeout(() => {
-          /* this.tempChart.dataTable.push([new Date(), 100]) */
+        /* setTimeout(() => {          
           this.loadTempChart(data.serverFlowerStates.map(data => [new Date(data.date), 100]));
-
-        }, 1000);
+        }, 1000); */
 
         console.log(this.tempChart)
       } else if (data.type === 'newFlowerState') {
@@ -134,7 +221,8 @@ export class Tab1Page implements OnInit {
     this.humiCard = {
       title: 'Humidity',
       content: '25%',
-      tableKey: 'humidity',
+      tableKey: 'humi',
+      /* chart: this.humiChart, */
       img:
         'https://base.imgix.net/files/base/ebm/hpac/image/2019/06/hpac' +
         '_7132_hpac_humidity_control_0719_pr.png?auto=format&fit=crop&h=432&w=768'
@@ -142,19 +230,23 @@ export class Tab1Page implements OnInit {
     this.tempCard = {
       title: 'Temperature',
       content: '23°',
-      tableKey: 'temperature',
+      tableKey: 'temp',
+      /* chart: this.tempChart, */
       img: 'https://shop.movar-print.hu/wp-content/uploads/2019/03/tavaszimezo-vaszonkep.jpg'
     };
     this.waterCard = {
       title: 'Is watered',
       content: 'No',
-      tableKey: 'watered',
+      tableKey: 'water',
+      /* chart: this.waterChart, */
       img:
         'https://www.water-technology.net/wp-content/uploads/sites/28/2017/11/water-thumb.png'
     };
     this.lightingCard = {
       title: 'Lighting',
       content: 'LED Strip On',
+      /* tableKey: 'light', */
+      /* chart: this.lightChart, */
       img:
         'https://www.thegreenage.co.uk/wp-content/uploads/2016/11/Screen-Shot-2016-10-24-at-12.17.46-780x350.png'
     };
@@ -226,6 +318,9 @@ export class Tab1Page implements OnInit {
     });
 
     this.loadTempChart([]);
+    this.loadHumiChart([]);
+    this.loadWaterChart([]);
+    this.loadLightChart([]);
     /* this.loadTempChart(); */
 
   }
